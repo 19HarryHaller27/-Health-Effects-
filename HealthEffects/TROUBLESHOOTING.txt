@@ -1,0 +1,12 @@
+HealthEffects only — install and loading
+==============================================
+
+- Use the build output in .\out\ForMods\ (HealthEffects.dll + modinfo [+pdb]).
+- If you copy the whole dev folder into Mods, remove the .\src\ folder from that copy,
+  or run build.ps1 with -PruneSrcFromDeploy to avoid the game recompiling C# in-process
+  and possibly shadowing the DLL you built.
+
+- The mod declares dependency on game 1.22.0; use a matching Vintage Story build.
+
+For crashes that do not reference "healtheffects" in the log, the cause is usually
+outside this mod (other mods, game data path, or a vanilla issue).

@@ -1,0 +1,77 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>HealthEffects</AssemblyName>
+    <RootNamespace>HealthEffects</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="VintagestoryAPI">
+      <HintPath>$(VintageStoryPath)\VintagestoryAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="PublishToModFolder" AfterTargets="Build">
+    <PropertyGroup>
+      <ModDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))</ModDir>
+    </PropertyGroup>
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModDir)" SkipUnchangedFiles="true" />
+    <Copy
+      SourceFiles="$(TargetDir)$(TargetName).pdb"
+      DestinationFolder="$(ModDir)"
+      SkipUnchangedFiles="true"
+      Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+  </Target>
+
+  <!-- After each successful build, copy the mod to the default Vintage Story mods folder (Windows). -->
+  <Target Name="DeployToVintageStoryData" AfterTargets="PublishToModFolder" Condition="'$(OS)' == 'Windows_NT' And '$(HealthEffectsNoDeploy)' != 'true'">
+    <PropertyGroup>
+      <_HeGameMods>$(UserProfile)\AppData\Roaming\VintagestoryData\Mods\HealthEffects</_HeGameMods>
+    </PropertyGroup>
+    <MakeDir Directories="$(_HeGameMods)" />
+    <Copy
+      SourceFiles="$(MSBuildThisFileDirectory)HealthEffects.dll"
+      DestinationFolder="$(_HeGameMods)"
+      SkipUnchangedFiles="true"
+      Condition="Exists('$(MSBuildThisFileDirectory)HealthEffects.dll')" />
+    <Copy
+      SourceFiles="$(MSBuildThisFileDirectory)modinfo.json"
+      DestinationFolder="$(_HeGameMods)"
+      SkipUnchangedFiles="true" />
+    <Copy
+      SourceFiles="$(MSBuildThisFileDirectory)HealthEffects.pdb"
+      DestinationFolder="$(_HeGameMods)"
+      SkipUnchangedFiles="true"
+      Condition="Exists('$(MSBuildThisFileDirectory)HealthEffects.pdb')" />
+    <Message Importance="high" Text="HealthEffects: deployed to $(_HeGameMods) (set HealthEffectsNoDeploy=true to skip)" />
+    <RemoveDir Directories="$(_HeGameMods)\src" Condition="'$(HealthEffectsPruneSrcOnDeploy)' == 'true'" />
+    <Message Importance="high" Condition="'$(HealthEffectsPruneSrcOnDeploy)' == 'true'" Text="HealthEffects: removed $(_HeGameMods)\src so the game uses the prebuilt DLL only." />
+  </Target>
+
+  <!-- Ship-ready folder: DLL + modinfo only (use this to install; keeps the game from compiling mod src in-process). -->
+  <Target Name="PackageForMods" AfterTargets="PublishToModFolder">
+    <PropertyGroup>
+      <_ForMods>$(MSBuildThisFileDirectory)out\ForMods\</_ForMods>
+    </PropertyGroup>
+    <MakeDir Directories="$(_ForMods)" />
+    <Copy
+      SourceFiles="$(TargetPath)"
+      DestinationFolder="$(_ForMods)"
+      SkipUnchangedFiles="true"
+      Condition="Exists('$(TargetPath)')" />
+    <Copy
+      SourceFiles="$(MSBuildThisFileDirectory)modinfo.json"
+      DestinationFolder="$(_ForMods)"
+      SkipUnchangedFiles="true" />
+    <Copy
+      SourceFiles="$(TargetDir)$(TargetName).pdb"
+      DestinationFolder="$(_ForMods)"
+      SkipUnchangedFiles="true"
+      Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+    <Message Importance="high" Text="HealthEffects: pack folder (DLL + modinfo [+pdb if present]) at $(_ForMods)" />
+  </Target>
+</Project>

@@ -1,0 +1,11 @@
+{
+  "type": "code",
+  "modid": "healtheffects",
+  "name": "HealthEffects",
+  "authors": ["adams"],
+  "description": "Movement and combat stats scale with current health %: move speed 1:1 with HP, combat bonuses (mining, ranged, accuracy, bow draw) scale +1% per 10% HP. Character screen shows a Health & vigor panel. Warning chat below 10% health. Standalone; no other mods required.",
+  "version": "0.1.4",
+  "dependencies": {
+    "game": "1.22.0"
+  }
+}
